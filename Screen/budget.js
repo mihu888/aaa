@@ -1,41 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Dimensions } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons'; // 修正的导入
+import { settoken, gettoken, getLoginInfo, clearLoginInfo } from '../globals';
 
 const { width } = Dimensions.get('window');
+const API_BASE_URL = 'http://120.55.68.146:8089';
 
-const API_DATA = {
-  wish: {
-    clothes: 1000,
-    eating: 500,
-    living: 800,
-    going: 300,
-    other: 200,
-  },
-  spending: {
-    clothes: 500,
-    eating: 300,
-    living: 600,
-    going: 200,
-    other: 100,
-  },
-};
 
 const budgetScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [newBudget, setNewBudget] = useState('');
+  const [API_DATA, setAPI_DATA] = useState(
+  {
+    "wish": {
+    "clothes": 0,
+    "eating": 0,
+    "living": 0,
+    "going": 0,
+    "other": 0
+},
+"spending": {
+    "clothes": 0,
+    "eating": 0,
+    "living": 0,
+    "going": 0,
+    "other": 0
+}});
+  const [wish, setwish] = useState({});
+  const [spending, setspending] = useState({});
+  //const [token, settoken] = useState('')
 
-  const calculateTotal = (category) => {
-    const { wish, spending } = API_DATA;
-    return wish[category] - spending[category];
+  
+
+  const fetchBudgetData = () => {
+    const token = gettoken();
+    fetch(`${API_BASE_URL}/getbudget/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token})
+      })
+      .then(response => response.json())
+      .then(data => {
+        setAPI_DATA(data)
+        setwish(data.wish)
+        setspending(data.spending)
+     })
+     .catch(error => console.error(error));
+     
   };
+
+  const updateBudget = () => {
+    const token = gettoken();
+    fetch(`${API_BASE_URL}/month_budget/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token, kind:selectedCategory, number:parseInt(newBudget, 10) })
+      })
+      .then(response => response.json())
+      .then(data => {
+        
+     })
+     .catch(error => console.error(error));
+  }
 
   const getIconName = (category) => {
     let iconName;
     switch (category) {
       case 'clothes':
-        iconName = 'shirt-outline';
+        iconName = 'cart-outline';
         break;
       case 'eating':
         iconName = 'restaurant-outline';
@@ -47,7 +84,7 @@ const budgetScreen = () => {
         iconName = 'car-sport-outline';
         break;
       case 'other':
-        iconName = 'code-working-outline';
+        iconName = 'ellipsis-horizontal-circle-outline';
         break;
       default:
         iconName = 'ios-help-circle';
@@ -55,12 +92,15 @@ const budgetScreen = () => {
     return iconName;
   };
 
-  const updateBudget = () => {
-    if (selectedCategory) {
-      API_DATA.wish[selectedCategory] = parseFloat(newBudget);
-      setModalVisible(false);
-    }
+  const calculateTotal = (category) => {
+    const { wish, spending } = API_DATA;
+    return wish[category] - spending[category];
   };
+
+  useEffect(() => {
+    fetchBudgetData()
+}, []);
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -69,7 +109,10 @@ const budgetScreen = () => {
         <View style={styles.totalItem}>
           <Text style={styles.totalLabelText}>剩余预算</Text>
         </View>
-        <Text style={styles.totalAmountText}>{Object.keys(API_DATA.wish).reduce((acc, category) => acc + calculateTotal(category), 0)}</Text>
+        <Text style={styles.totalAmountText}>
+         {Object.keys(API_DATA.wish).reduce((acc, category) => acc + calculateTotal(category), 0)}
+          {/* {API_DATA.wish.clothes} */}
+        </Text>
         <View style={{height:20}}></View>
         <View style={{ flexDirection: 'row'}}>
           <View style={{flex:1}}><Text style={styles.totalBudgetText}>月预算: {Object.values(API_DATA.wish).reduce((acc, val) => acc + val, 0)}</Text></View>
@@ -123,13 +166,15 @@ const budgetScreen = () => {
             />
             <View style={{flex:1,flexDirection:'row'}}>
             <Button title="取消" onPress={()=>setModalVisible(false)} />
-            <Button title="保存" onPress={updateBudget} /></View>
+            <Button title="保存" onPress={()=>{updateBudget(),setModalVisible(false),fetchBudgetData()}} /></View>
           </View>
         </View>
       </Modal>
     </ScrollView>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -161,7 +206,7 @@ const styles = StyleSheet.create({
     color:'black',
   },
   totalAmountText: {
-    fontSize: 20,
+    fontSize: 30,
     marginLeft: 5,
     fontWeight: 'bold',
     color:'black',
@@ -224,5 +269,24 @@ const styles = StyleSheet.create({
     width: 100,
   },
 });
-
 export default budgetScreen;
+
+
+
+
+// const API_DATA = {
+//   wish: {
+//     clothes: 1000,
+//     eating: 500,
+//     living: 800,
+//     going: 300,
+//     other: 200,
+//   },
+//   spending: {
+//     clothes: 500,
+//     eating: 300,
+//     living: 600,
+//     going: 200,
+//     other: 100,
+//   },
+// }

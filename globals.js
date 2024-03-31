@@ -37,11 +37,18 @@ export async function clearLoginInfo() {
 
 
 let token = '';  
+let user=''
   
 export const settoken = (variable) => {  
   token = variable;  
 };  
+export const setuser = (variable) => {  
+  user = variable;  
+};  
   
 export const gettoken = () => {  
   return token;  
+};
+export const getuser = () => {  
+  return user;  
 };

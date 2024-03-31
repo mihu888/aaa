@@ -2,6 +2,8 @@ import { Text, StyleSheet, View, SafeAreaView, Dimensions, FlatList } from 'reac
 import React, { Component, useEffect, useState } from 'react'
 import {Picker} from "@react-native-picker/picker";
 import { Divider } from '@rneui/base';
+import { gettoken} from '../globals';
+
 
 const billScreen = () =>{
 
@@ -11,50 +13,51 @@ const billScreen = () =>{
   const [remain, setremain] = useState(0);
   const years = Array.from({ length: 50 }, (_, i) => i + new Date().getFullYear() - 49); // 假设从1970年开始
   const [selectedYear, setSelectedYear] = useState(2024)
-//   const [myData, setmyData] = useState([])
+  const [myData, setmyData] = useState([])
 
 
-    const myData = [
-        {
-            "month": "yiyue",
-            "in": 1000,
-            "out": 45630
-        },
-        {
-            "month": "eryue",
-            "in": 6350,
-            "out": 456340
-        }
-    ]
+    // const myData = [
+    //     {
+    //         "month": "yiyue",
+    //         "in": 1000,
+    //         "out": 45630
+    //     },
+    //     {
+    //         "month": "eryue",
+    //         "in": 6350,
+    //         "out": 456340
+    //     }
+    // ]
   
 
 
 
-//   const load = (year) =>{
-//     fetch(url,{
-//       method: 'POST',
-//       headers:{
-//         //Accept:'application/json',
-//         "Content-Type":'application/json',
-//         //Authorization:`Bearer ${token}`
-//       },
-//       body : JSON.stringify({ token: token, year: year})
-//     })
-//     .then(response=>response.json())
-//     .then(json=>{
-//       setmyData(json)
-//       setsumin(json.in.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
-//       setsumout(json.out.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
-//     })
-//     .catch(error=>console.error(error))
-//     .finally(()=>setIsLoading(false));
-//   }
+  const load = (year) =>{
+    const token = gettoken()
+    fetch("http://120.55.68.146:8089/getmonthlybill/",{
+      method: 'POST',
+      headers:{
+        //Accept:'application/json',
+        "Content-Type":'application/json',
+        //Authorization:`Bearer ${token}`
+      },
+      body : JSON.stringify({ token: token, year: year})
+    })
+    .then(response=>response.json())
+    .then(json=>{
+      setmyData(json)
+      setsumin(json.in.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
+      setsumout(json.out.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
+    })
+    .catch(error=>console.error(error))
+    .finally(()=>setIsLoading(false));
+  }
 
-//   // 使用 useEffect 来处理副作用
-//   useEffect(() => {
-//     load(selectedYear);
-//   }, [selectedYear]); // 当 selectedYear 改变时触发
-//   // useEffect(() => load(url1,income), []);
+  // 使用 useEffect 来处理副作用
+  useEffect(() => {
+    load(selectedYear);
+  }, [selectedYear]); // 当 selectedYear 改变时触发
+  // useEffect(() => load(url1,income), []);
 
   return(
     <SafeAreaView style={{flex:1, backgroundColor:'white'}}>

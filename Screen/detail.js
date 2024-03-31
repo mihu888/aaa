@@ -10,6 +10,25 @@ import Navigation from '../App';
 import { gettoken} from '../globals';
 
 
+const dic={
+  "eating":"restaurant-outline",
+  "clothes":"cart-outline",
+  'living':"home-outline",
+  'going':"car-sport-outline",
+  'other':"ellipsis-horizontal-circle-outline",
+  "salary":"card-outline",
+  "manage":"calculator-outline",
+}
+
+const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());  
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); 
+  const [sumin, setsumin] = useState(0)
+  const [sumout, setsumout] = useState(0)
+  const [reamain, setremain] = useState(0)
+  const [myData, setmyData] = useState([])
+  const [numday, setnumday] = useState(0) 
+
+
 const SwipeableBillSubItem = ({ subItem }) => {
   const [isModalVisible1, setIsModalVisible1] = useState(false);
   const [isModalVisible2, setIsModalVisible2] = useState(false);
@@ -17,24 +36,76 @@ const SwipeableBillSubItem = ({ subItem }) => {
   const [inputValue, setInputValue] = useState('');
   const [itemid, setItemid] = useState(0)
 
-  const ifdel = () => {
-    Alert.alert(
-      '操作确认',
-      '您确定要删除这项吗？',
-      [
-        {
-          text: '取消',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: '删除',
-          onPress: () => onDelete(subItem), // 调用父组件提供的onDelete回调函数
-        },
-      ],
-      { cancelable: false },
-    );
-  };
+  // const ifdel = () => {
+  //   Alert.alert(
+  //     '操作确认',
+  //     '您确定要删除这项吗？',
+  //     [
+  //       {
+  //         text: '取消',
+  //         onPress: () => console.log('Cancel Pressed'),
+  //         style: 'cancel',
+  //       },
+  //       {
+  //         text: '删除',
+  //         onPress: () => onDelete(subItem), // 调用父组件提供的onDelete回调函数
+  //       },
+  //     ],
+  //     { cancelable: false },
+  //   );
+  // };
+
+  const load = (selectedYear,selectedMonth) =>{
+    const token = gettoken();
+    fetch(url,{
+      method: 'POST',
+      headers:{
+          //Accept:'application/json',
+          "Content-Type":'application/json',
+          //Authorization:`Bearer ${token}`
+      },
+      body : JSON.stringify({ token: token, year: selectedYear, month: selectedMonth+1})
+    })
+    .then(response=>response.json())
+    .then(json=>{
+        console.log(json);
+        setnumday(json.length)
+        setsumin(json.reduce((acc, item) => acc + item.in, 0))
+        setsumout(json.reduce((acc, item) => acc + item.out, 0))
+        setmyData(json)
+    })
+    .catch(error=>console.error(error))
+    .finally(()=>setIsLoading(false));
+  }
+
+  const edit = (id,note,num) =>{
+    const token = gettoken();
+    fetch(`http://120.55.68.146:8089/change/${id}`,{
+      method: 'POST',
+      headers:{
+          //Accept:'application/json',
+          "Content-Type":'application/json',
+          //Authorization:`Bearer ${token}`
+     },
+     body : JSON.stringify({ token: token, note: note, number: num})
+    })
+    .catch(error=>console.error(error))
+    .finally(()=>setIsLoading(false));
+  }
+
+  const onDelete = (id) =>{
+    const token = gettoken();
+    fetch(`http://120.55.68.146:8089/bills/${id}`,{
+      method: 'POST',
+      headers:{
+          //Accept:'application/json',
+          "Content-Type":'application/json',
+          //Authorization:`Bearer ${token}`
+     },
+    })
+    .catch(error=>console.error(error))
+    .finally(()=>setIsLoading(false));
+  }
 
   const handleButtonClick = () => {
     setIsModalVisible2(true);
@@ -58,7 +129,7 @@ const SwipeableBillSubItem = ({ subItem }) => {
   };
 
   const handleConfirm = () => {
-    // edit(itemid, inputValue, numericValue);
+    edit(itemid, inputValue, numericValue);
     console.log('Confirmed value:', numericValue);
     handleModalClose();
     // load(selectedYear, selectedMonth);
@@ -67,7 +138,7 @@ const SwipeableBillSubItem = ({ subItem }) => {
   return (
     <View style={{ flex: 1, flexDirection: 'row', height: 50 }}>
       <View style={{flex:1, justifyContent:'center'}}>
-        <Ionicons name={subItem.name} style={{fontSize:30, marginLeft:15, color:'black'}}/>
+        <Ionicons name={dic[subItem.name]} style={{fontSize:30, marginLeft:15, color:'black'}}/>
       </View>
     
       <View style={{flex:4, justifyContent:'center'}}>
@@ -78,6 +149,7 @@ const SwipeableBillSubItem = ({ subItem }) => {
           setNumericValue(subItem.number);
           }}
           onLongPress={() => {
+            setItemid(subItem.id);
             Alert.alert(
               '操作确认',
               '您确定要删除这项吗？',
@@ -90,8 +162,8 @@ const SwipeableBillSubItem = ({ subItem }) => {
                 {
                   text: '删除',
                   onPress: () => {
-                    onDelete(subItem.id)
-                    // load(selectedYear, selectedMonth)
+                    onDelete(itemid.toString());
+                    load(selectedYear, selectedMonth);
                   }
                 },
               ],
@@ -114,11 +186,11 @@ const SwipeableBillSubItem = ({ subItem }) => {
               style={styles.textInput}
               value={inputValue}
               onChangeText={handleTextInputChange}
-              placeholder="请输入注释"
+              placeholder="请输入备注"
             />
             <View style={styles.buttonRow}>
-              <Button title="确认" onPress={handleConfirm} />
-              <Button title="取消" onPress={handleModalClose} />
+              <Button title="确认" onPress={()=>handleConfirm()} />
+              <Button title="取消" onPress={()=>handleModalClose()} />
             </View>
           </View>
         </Modal>
@@ -169,45 +241,62 @@ const Screen1 = () => {
   
   const [isloading, setIsLoading] = useState(true);
   const navigation = useNavigation();
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());  
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); 
-  const [token, settoken] = useState('')
-  // const [numday, setnumday] = useState(0) 
-  // const [sumin, setsumin] = useState(0)
-  // const [sumout, setsumout] = useState(0)
-  // const [reamain, setremain] = useState(0)
-  // const [myData, setmyData] = useState([])
+  const url = "http://120.55.68.146:8089/getmonthlybill/"
+
+  // const myData = [
+  //   {
+  //     "time": "2009-11-01",
+  //     "bill": [
+  //       {
+  //         "name": "reader-outline",
+  //         "note": "aliqua cillum",
+  //         "number": 99,
+  //         "id": 5
+  //       }
+  //     ],
+  //     "in": 85,
+  //     "out": 5
+  //   }
+  // ]
+
+  // const numday = 2
+  // const sumin = 10
+  // const sumout = 7
+  // const remain = 3
+  
+
+  const load = (selectedYear,selectedMonth) =>{
+    const token = gettoken();
+    fetch(url,{
+      method: 'POST',
+      headers:{
+          //Accept:'application/json',
+          "Content-Type":'application/json',
+          //Authorization:`Bearer ${token}`
+      },
+      body : JSON.stringify({ token: token, year: selectedYear, month: selectedMonth+1})
+    })
+    .then(response=>response.json())
+    .then(json=>{
+        console.log(json);
+        setnumday(json.length)
+        setsumin(json.reduce((acc, item) => acc + item.in, 0))
+        setsumout(json.reduce((acc, item) => acc + item.out, 0))
+        setmyData(json)
+    })
+    .catch(error=>console.error(error))
+    .finally(()=>setIsLoading(false));
+  }
 
 
-  const myData = [
-    {
-      "time": "2009-11-01",
-      "bill": [
-        {
-          "name": "reader-outline",
-          "note": "aliqua cillum",
-          "number": 99,
-          "id": 5
-        }
-      ],
-      "in": 85,
-      "out": 5
-    }
-  ]
 
-  const numday = 2
-  const sumin = 10
-  const sumout = 7
-  const remain = 3
-
-
-
-  useEffect(() => {  
-    const updateGlobalVariable = () => {  
-      settoken(gettoken());  
-    };  
-    // 监听全局变量变化的逻辑（如果有的话）  
-  }, []); // 空依赖数组意味着这个 effect 只会在组件挂载时运行一次 
+  useEffect(() => {    
+    // if(selectedMonth!=null){
+      load(selectedYear,selectedMonth)
+    // }
+    // else{load(new Date().getFullYear(),new Date().getMonth())}
+    // //监听全局变量变化的逻辑（如果有的话）  
+  }, [selectedMonth,selectedYear]); // 空依赖数组意味着这个 effect 只会在组件挂载时运行一次 
 
   return (  
     <SafeAreaView style={{flex:1}}>  
@@ -257,12 +346,12 @@ const Screen1 = () => {
           <View style={{flex:0.2}}></View>
           <View style={{flex:1.4}}>
             <Text style={{marginTop:20,fontSize:16, color:'black'}}>收入</Text>
-            <Text style={{fontSize:27, color:'black'}}>666</Text>
-            <Text style={{fontSize:13, color:'black'}}>剩余  666</Text>
+            <Text style={{fontSize:27, color:'black'}}>{sumin}</Text>
+            <Text style={{fontSize:13, color:'black'}}>剩余  {reamain}</Text>
           </View>
           <View style={{flex:1.4}}>
             <Text style={{marginTop:20, color:'black'}}>支出</Text>
-            <Text style={{fontSize:27, color:'black'}}>666</Text>
+            <Text style={{fontSize:27, color:'black'}}>{sumout}</Text>
           </View>
         </View>
         <View style={{flex:0.1}}></View>

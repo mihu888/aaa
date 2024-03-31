@@ -46,6 +46,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';  
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';  
@@ -72,12 +73,14 @@ function MyTabs() {
      <Tab.Navigator  
       tabBar={(props) => <CustomTabBar {...props} />} 
       initialRouteName="Screen1"  
+      style={{ flex: 1 }}
       screenOptions={{  
         headerShown:false
       }}>   
       <Tab.Screen name="明细" component={Screen1} options={{  
           tabBarIcon: ({ focused, color, size }) => (  
             <Ionicons name="reorder-four-outline" size={size} color={color} /> ),  
+            
         }}   />  
       <Tab.Screen name="图表" component={Screen2} options={{  
           tabBarIcon: ({ focused, color, size }) => (  
@@ -105,11 +108,8 @@ function Stack1(){
 
   useEffect(() => {
     async function checkToken() {
-      const loginInfo = await getLoginInfo();
-      if (loginInfo) {
-        const token = loginInfo.token;
-        const username = loginInfo.username;
-        // 现在你可以分别使用token和username进行后续操作
+      const token = gettoken();
+      if (token != null) {
         setInitialRoute('main');
       }
       

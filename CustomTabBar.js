@@ -68,14 +68,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: 'pink',
-    paddingBottom: 10, // Adjust as needed
+    //paddingBottom: 10, // Adjust as needed
   },
   tab: {
     flex: 1,
     flexDirection: 'column', // 改为垂直堆叠
     alignItems: 'center',
     justifyContent: 'flex-end', // 让图标和文字位于底部
-    padding: 12,
+    padding: 7,
   },
   iconContainer: {
     // 你可以在这里添加图标的样式，如果需要的话

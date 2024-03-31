@@ -7,7 +7,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { Circle, Path, G } from 'react-native-svg';
 import { Grid } from 'react-native-svg-charts';
-import {Divider} from '@rneui/themed'
+import {Divider} from '@rneui/themed';
+import { settoken, gettoken, getLoginInfo, clearLoginInfo } from '../globals';
 
 
 const chartConfig = {
@@ -17,9 +18,24 @@ const chartConfig = {
  color: (opacity = .5) => `rgba(0,0,0, ${opacity})`,
 };
 
-const dic = {
-    "add-circle-outline": '工资',
-    'add-outline': '红包'
+const title = {
+  "eating":"餐饮",
+  "clothes":"购物",
+  'living':"住房",
+  'going':"交通",
+  'other':"其它",
+  "salary":"工资",
+  "manage":"理财",
+}
+
+const dic={
+  "eating":"restaurant-outline",
+  "clothes":"cart-outline",
+  'living':"home-outline",
+  'going':"car-sport-outline",
+  'other':"ellipsis-horizontal-circle-outline",
+  "salary":"card-outline",
+  "manage":"calculator-outline",
 }
 
 const CustomGrid = ({ x, y }) => {
@@ -32,36 +48,6 @@ const CustomGrid = ({ x, y }) => {
       />
     );
   };
-
-const 
-  data= {
-      "number": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-      ]
-  }
-  const order= [
-      {
-          "name": "add-circle-outline",
-          "note": "string",
-          "rate": "string"
-      },
-      {
-        "name": "add-circle-outline",
-        "note": "string",
-        "rate": "string"
-    }
-  ]
 
 
 
@@ -88,60 +74,53 @@ const Screen1 = () => {
 
 
 
-    const [selectedButton, setSelectedButton] = useState("year")
+    const [selectedButton, setSelectedButton] = useState("week")
     //const { token } = useContext(AuthContext);
     const [isloading, setIsLoading] = useState(true);
     const [weekDay, setweekDay] = useState([]);
-    const [monthDay, setmonthDay] = useState(31);
     const [numday, setnumday] = useState(0);
-    const [Data, setData] = useState('');
-    const [Order, setOrder] = useState('');
-    // const [show1, setshow1] = useState(true);
-    // const [show12, setshow12] = useState(false);
-    // const [show2, setshow2] = useState(false);
-    // const [show22, setshow22] = useState(false);
-    // const [show3, setshow3] = useState(false);
-    // const [show32, setshow32] = useState(false);
+    const [Data, setData] = useState([]);
+    const [Order, setOrder] = useState([]);
     const [ave, setave] = useState(0);
     const [sum, setsum] = useState(0);
     const [income, setincome] = useState(1);
-    const [url,seturl] = useState('https://api.example.com/getweekbill');
+    const [url,seturl] = useState('http://120.55.68.146:8089/getweekbill/');
 
     // 模拟三个URL 
-    const url1 = 'https://api.example.com/getweekbill';
-    const url2 = 'https://api.example.com/getmonthbill';
-    const url3 = 'https://api.example.com/getyearbill';
+    const url1 = 'http://120.55.68.146:8089/getweekbill/';
+    const url2 = 'http://120.55.68.146:8089/getmonthbill/';
+    const url3 = 'http://120.55.68.146:8089/getyearbill/';
 
-  //   const load = (url,num) =>{
-  //     fetch(url,{
-  //       method: 'POST',
-  //       headers:{
-  //           //Accept:'application/json',
-  //           "Content-Type":'application/json',
-  //           //Authorization:`Bearer ${token}`
-  //      },
-  //      body : JSON.stringify({ token: token, income: num})
-  //  })
-  // .then(response=>response.json())
-  // .then(json=>{
-  //     console.log(json);
-  //     setData(json.data.number)
-  //     setOrder(json.order)
-  //     setsum(json.data.number.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
-  //     setnumday(12)
+    const load = (url,num) =>{
+      const token = gettoken()
+      fetch(url,{
+        method: 'POST',
+        headers:{
+            //Accept:'application/json',
+            "Content-Type":'application/json',
+            //Authorization:`Bearer ${token}`
+       },
+       body : JSON.stringify({ token, income: num})
+   })
+  .then(response=>response.json())
+  .then(json=>{
+      console.log(json);
+      setData(json.data.number)
+      setOrder(json.order)
+      setsum(json.data.number.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
+      setnumday(12)
 
-  //     if(json.data.date){
-  //       setweekDay(json.data.date)
-  //       setnumday(7)
-  //     }
-  //     if(json.data.day){
-  //       setmonthDay(json.data.day)
-  //       setnumday(json.data.day)
-  //     }
-  // })
-  // .catch(error=>console.error(error))
-  //  .finally(()=>setIsLoading(false));
-  //   }
+      if(json.data.date){
+        setweekDay(json.data.date)
+        setnumday(7)
+      }
+      if(json.data.day){
+        setnumday(json.data.day)
+      }
+  })
+  .catch(error=>console.error(error))
+   .finally(()=>setIsLoading(false));
+    }
 
     const handleSelectButton = (buttonName) => {
       if(buttonName == "week")seturl(url1);
@@ -154,15 +133,15 @@ const Screen1 = () => {
 
     const handlePickerChange = (itemValue) => {
       setincome(itemValue);
-      load(url,itemValue);  // 调用load函数并传入相应参数
+      //load(url,itemValue);  // 调用load函数并传入相应参数
     }
 
 
-    // // 使用 useEffect 来处理副作用
-    // useEffect(() => {
-    //   load(url, income);
-    // }, [url, income]); // 当 selectedUrl 或 income 改变时触发
-    // // useEffect(() => load(url1,income), []);
+    // 使用 useEffect 来处理副作用
+    useEffect(() => {
+      load(url, income);
+    }, [url, income]); // 当 selectedUrl 或 income 改变时触发
+    // useEffect(() => load(url1,income), []);
 
   return (  
       <SafeAreaView style={{flex:1}}>  
@@ -198,8 +177,9 @@ const Screen1 = () => {
                 //   handlePickerChange(itemValue)
                 // }
                 selectedValue={selectedValue}
-                onValueChange={(itemValue) =>
+                onValueChange={(itemValue) =>{
                   setSelectedValue(itemValue)
+                  handlePickerChange(itemValue)}
                 }
                 mode={'dropdown'}
                 >
@@ -245,29 +225,32 @@ const Screen1 = () => {
               </View>
             </View>
           </View>
-          <Text>{income == 1?"总收入：":"总支出："}{sum}</Text>
+          <View style={{flex:1, justifyContent:'center', marginTop:5, marginLeft:10}}>
+            <Text>{income == 1?"总收入：":"总支出："}{sum}</Text>
             <Text>平均值：{sum/numday}</Text>
+          </View>
+          <View style={{flex:0.3}}></View>
             <Divider orientation='horizontal' color='#aaaaaa' width={3} style={{marginHorizontal:10}} />
           {/* <View style={{flexDirection:'row',flex:1}}>
           </View>   */}
           <View style={{flex:5, marginLeft:-50}}>  
             <LineChart
-                // data={{
-                //   labels:
-                //   url == url1? weekDay :
-                //   url == url2?Array.from({length: monthDay}, (_, index) => String(index + 1)) :
-                //   url == url3?['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'] :
-                //   null,
-                //   datasets:[{
-                //     data:Data
-                //   }]
-                // }}
-                data = {{
-                labels:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
-                datasets:[
-                    {data:[1,2,3,4,5,6,7,8,9,12,23,33]}
-                ],
+                data={{
+                  labels:
+                  url == url1? weekDay :
+                  url == url2?Array.from({length: numday}, (_, index) => String(index + 1)) :
+                  url == url3?['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'] :
+                  null,
+                  datasets:[{
+                    data:Data
+                  }]
                 }}
+                // data = {{
+                // labels:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+                // datasets:[
+                //     {data:[1,2,3,4,5,6,7,8,9,12,23,33]}
+                // ],
+                // }}
                 width={Dimensions.get('window').width+50}
                 height={220}
                 chartConfig={chartConfig}
@@ -280,19 +263,19 @@ const Screen1 = () => {
                 renderDotContent={({ x, y, index }) => <CustomPoint x={x} y={y} index={index}/> }
                 />
           </View>
-          <View style={{flex:7}}>
-            <Text style={{fontSize:20, color:'black'}}>{income?"收入排行榜":"支出排行榜"}</Text>
+          <View style={{flex:6.7}}>
+            <Text style={{fontSize:20, color:'black', marginLeft:10}}>{income?"收入排行榜":"支出排行榜"}</Text>
             <FlatList
-            data={order}
+            data={Order}
 
             renderItem={({item})=>{
               return(
                 <View style={{flexDirection:'row', height:50, alignItems:'center'}}>
                   <View style={{flex:1}}>
-                    <Ionicons name={item.name} style={{fontSize:40, color:'black'}} />
+                    <Ionicons name={dic[item.name]} style={{fontSize:40, color:'black'}} />
                   </View>
                   <View style={{flex:2}}>
-                    <Text style={{fontSize:18,textAlign:'center', color:'black'}}>{dic[item.name]}</Text>
+                    <Text style={{fontSize:18,textAlign:'center', color:'black'}}>{title[item.name]}</Text>
                   </View>
                   <View style={{flex:2}}>
                     <Text style={{fontSize:18,textAlign:'center', color:'black'}}>{item.rate}</Text>
