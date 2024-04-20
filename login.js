@@ -3,8 +3,6 @@ import { View, Text, TextInput, Button, Alert } from 'react-native';
 import { settoken, gettoken, saveLoginInfo, setuser } from './globals';
 import { useNavigation } from '@react-navigation/native'; 
 
-//import { AuthContext } from './globals';
-
 const AuthScreen = () => {
 
   const navigation = useNavigation();
@@ -44,20 +42,6 @@ const AuthScreen = () => {
          Alert.alert("两次输入密码不一致，请重新输入");
          return;
      }
-  
-    //  // 检查用户名是否已存在
-    //  fetch('https://api.example.com/checkUsername', { 
-    //    method: 'POST',
-    //    headers: { 
-    //      'Content-Type': 'application/json'
-    //    },
-    //    body: JSON.stringify({ username })
-    //  })
-    // .then(response => response.json())
-    // .then(data => {
-    //   if (data.exists) { // 用户名已存在
-    //     Alert.alert("该用户名已被使用，请选择另一个");
-    //   } else { // 用户名可用，继续注册操作
          fetch('http://120.55.68.146:8089/register/', { 
            method: 'POST',
            headers: { 
@@ -72,8 +56,6 @@ const AuthScreen = () => {
           console(data)
         })
         .catch(error => console.error(error));
-    // }
-    // }).catch(error=>console.error(error));
    }
   };
 

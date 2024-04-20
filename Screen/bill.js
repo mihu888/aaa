@@ -15,39 +15,20 @@ const billScreen = () =>{
   const [selectedYear, setSelectedYear] = useState(2024)
   const [myData, setmyData] = useState([])
 
-
-    // const myData = [
-    //     {
-    //         "month": "yiyue",
-    //         "in": 1000,
-    //         "out": 45630
-    //     },
-    //     {
-    //         "month": "eryue",
-    //         "in": 6350,
-    //         "out": 456340
-    //     }
-    // ]
-  
-
-
-
   const load = (year) =>{
     const token = gettoken()
-    fetch("http://120.55.68.146:8089/getmonthlybill/",{
+    fetch("http://120.55.68.146:8089/getyearlybill/",{
       method: 'POST',
       headers:{
-        //Accept:'application/json',
         "Content-Type":'application/json',
-        //Authorization:`Bearer ${token}`
       },
       body : JSON.stringify({ token: token, year: year})
     })
     .then(response=>response.json())
     .then(json=>{
       setmyData(json)
-      setsumin(json.in.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
-      setsumout(json.out.reduce((accumulator, currentValue) => accumulator + currentValue, 0))
+      setsumin(json.reduce((accumulator, currentValue) => accumulator + currentValue.in, 0))
+      setsumout(json.reduce((accumulator, currentValue) => accumulator + currentValue.out, 0))
     })
     .catch(error=>console.error(error))
     .finally(()=>setIsLoading(false));
@@ -97,7 +78,7 @@ const billScreen = () =>{
             }}>
           <View style={{flex:1.5, margin:20}}>
             <Text style={{color:'black'}}>年结余</Text>
-            <Text style={{color:'black', fontSize:30}}>{remain}</Text>
+            <Text style={{color:'black', fontSize:30}}>{sumin-sumout}</Text>
           </View>
           <View style={{flex:1, flexDirection:'row',marginLeft:20}}>
             <View style={{flex:1}}>

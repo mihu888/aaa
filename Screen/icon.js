@@ -6,17 +6,8 @@ import { LineChart } from 'react-native-chart-kit';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { Circle, Path, G } from 'react-native-svg';
-import { Grid } from 'react-native-svg-charts';
 import {Divider} from '@rneui/themed';
 import { settoken, gettoken, getLoginInfo, clearLoginInfo } from '../globals';
-
-
-const chartConfig = {
-  backgroundGradientFrom: '#fff',
-  backgroundGradientTo: '#fff',
-  showYAxisLabel: false,
- color: (opacity = .5) => `rgba(0,0,0, ${opacity})`,
-};
 
 const title = {
   "eating":"餐饮",
@@ -38,19 +29,6 @@ const dic={
   "manage":"calculator-outline",
 }
 
-const CustomGrid = ({ x, y }) => {
-    return (
-      <Path
-        key={'line'}
-        d={`M0 ${y} L400 ${y}`} // 根据需求调整横线的位置和长度
-        stroke={'black'} // 设置线条颜色为黑色
-        strokeWidth={1} // 设置线条宽度为1
-      />
-    );
-  };
-
-
-
   const CustomPoint = ({ x, y, index }) => {
     return (
       <Circle
@@ -68,12 +46,6 @@ const CustomGrid = ({ x, y }) => {
 const Screen1 = () => {
 
   const [selectedValue, setSelectedValue] = useState(0);
-  
-  
-
-
-
-
     const [selectedButton, setSelectedButton] = useState("week")
     //const { token } = useContext(AuthContext);
     const [isloading, setIsLoading] = useState(true);
@@ -81,15 +53,21 @@ const Screen1 = () => {
     const [numday, setnumday] = useState(0);
     const [Data, setData] = useState([]);
     const [Order, setOrder] = useState([]);
-    const [ave, setave] = useState(0);
     const [sum, setsum] = useState(0);
-    const [income, setincome] = useState(1);
+    const [income, setincome] = useState(0);
     const [url,seturl] = useState('http://120.55.68.146:8089/getweekbill/');
 
     // 模拟三个URL 
     const url1 = 'http://120.55.68.146:8089/getweekbill/';
     const url2 = 'http://120.55.68.146:8089/getmonthbill/';
     const url3 = 'http://120.55.68.146:8089/getyearbill/';
+
+    const chartConfig = {
+      backgroundGradientFrom: '#fff',
+      backgroundGradientTo: '#fff',
+      showYAxisLabel: false,
+     color: (opacity = 0.5) => `rgba(0,0,0, ${opacity})`,
+    };
 
     const load = (url,num) =>{
       const token = gettoken()
@@ -245,12 +223,6 @@ const Screen1 = () => {
                     data:Data
                   }]
                 }}
-                // data = {{
-                // labels:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
-                // datasets:[
-                //     {data:[1,2,3,4,5,6,7,8,9,12,23,33]}
-                // ],
-                // }}
                 width={Dimensions.get('window').width+50}
                 height={220}
                 chartConfig={chartConfig}

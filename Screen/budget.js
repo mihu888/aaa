@@ -6,6 +6,14 @@ import { settoken, gettoken, getLoginInfo, clearLoginInfo } from '../globals';
 const { width } = Dimensions.get('window');
 const API_BASE_URL = 'http://120.55.68.146:8089';
 
+const dic = {
+  "eating":"餐饮",
+  "clothes":"购物",
+  'living':"住房",
+  'going':"交通",
+  'other':"其它",
+}
+
 
 const budgetScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -157,7 +165,7 @@ const budgetScreen = () => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text>修改 {selectedCategory} 的月预算</Text>
+            <Text>修改 {dic[selectedCategory]} 的月预算</Text>
             <TextInput
               style={styles.input}
               onChangeText={setNewBudget}
@@ -270,23 +278,3 @@ const styles = StyleSheet.create({
   },
 });
 export default budgetScreen;
-
-
-
-
-// const API_DATA = {
-//   wish: {
-//     clothes: 1000,
-//     eating: 500,
-//     living: 800,
-//     going: 300,
-//     other: 200,
-//   },
-//   spending: {
-//     clothes: 500,
-//     eating: 300,
-//     living: 600,
-//     going: 200,
-//     other: 100,
-//   },
-// }

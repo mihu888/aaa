@@ -88,7 +88,6 @@ const Screen1 = () => {
                   {
                     text: '退出',
                     onPress: () => {
-                      clearLoginInfo();
                       navigation.navigate('login');
                     }
                   },

@@ -2,26 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, TextInput, FlatList } from 'react-native';  
 import {Divider} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { gettoken } from '../globals';
   
 const Screen1 = () => {  
   const [selecttext,setselecttext] = useState("类别")
   const [item,setitem] = useState('')
   const [order,setorder] = useState("t")
   const [myData, setmyData] = useState([])
-
-  // const myData = [
-  //   {
-  //     "time": "2009-11-01",
-  //     "bill": [
-  //       {
-  //         "name": "reader-outline",
-  //         "note": "aliqua cillum",
-  //         "number": 99,
-  //         "id": 5
-  //       }
-  //     ]
-  //   }
-  // ]
 
   const dic={
     "eating":"restaurant-outline",
@@ -33,18 +20,29 @@ const Screen1 = () => {
     "manage":"calculator-outline",
   }
 
+  const title = {
+    "餐饮":"eating",
+    "购物":"clothes",
+    "住房":'living',
+    "交通":'going',
+    "其它":'other',
+    "工资":"salary",
+    "理财":"manage",
+  }
+
   const find = () =>{
     const token = gettoken();
-    fetch(url, {
+    fetch('http://120.55.68.146:8089/search/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ token, order, number:selecttext=="类别"?item:"", note:selecttext=="备注"?item:"", number:selecttext=="金额"?Number(item):0})
+      body: JSON.stringify({ token, order, name:selecttext=="类别"?title[item]:"", note:selecttext=="备注"?item:"", number:selecttext=="金额"?Number(item):0})
     })
     .then(response => response.json())
     .then(data => {
-      data.data=="No Data"?setmyData([]):setmyData(data)
+      data.data=="No Data"?setmyData([]):setmyData(data.data);
+      console.log(data)
     })
     .catch(error => console.error(error));
   }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, Mod
 import {Divider} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker'; 
+import { gettoken } from '../globals';
   
 const Screen1 = () => { 
 
@@ -43,17 +44,16 @@ const Screen1 = () => {
     setmonth(date.getMonth()+1);  
     setday(date.getDate());
     setisDateTimePickerVisible(false) ;
-    ()=>add();
   }; 
 
   const add = () =>{
     const token = gettoken();
-    fetch(url, {
+    fetch('http://120.55.68.146:8089/bills/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ token, year, month, day, income, number:num, name:dic[name], note })
+        body: JSON.stringify({ token, year, month, day, income, number:num, name, note })
       })
       .then(response => response.json())
       .then(data => {
@@ -179,7 +179,7 @@ const Screen1 = () => {
             <View style={{height:40, flexDirection:'row'}}>
             <Button title="取消" onPress={()=>setModalVisible(false)} />
             <View style={{width:20}}></View>
-            <Button title="添加" onPress={()=>{setModalVisible(false)}} /></View>
+            <Button title="添加" onPress={()=>{setModalVisible(false),add()}} /></View>
           </View>
         </View>
       </Modal>

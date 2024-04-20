@@ -6,8 +6,8 @@ import {Picker} from "@react-native-picker/picker";
 import LinearGradient from 'react-native-linear-gradient';
 import { Divider } from '@rneui/themed';
 import { useNavigation } from '@react-navigation/native'; 
-import Navigation from '../App';
 import { gettoken} from '../globals';
+//import { useFocusEffect } from '@react-navigation/native';
 
 
 const dic={
@@ -19,41 +19,28 @@ const dic={
   "salary":"card-outline",
   "manage":"calculator-outline",
 }
+  
+const Screen1 = () => {
+  const years = Array.from({ length: 50 }, (_, i) => i + new Date().getFullYear() - 49); // 假设从1970年开始  
+  const months = ['01月', '02月', '03月', '04月', '05月', '06月', '07月', '08月', '09月', '10月', '11月', '12月'];  
+  
 
-const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());  
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); 
-  const [sumin, setsumin] = useState(0)
-  const [sumout, setsumout] = useState(0)
-  const [reamain, setremain] = useState(0)
-  const [myData, setmyData] = useState([])
-  const [numday, setnumday] = useState(0) 
-
-
-const SwipeableBillSubItem = ({ subItem }) => {
   const [isModalVisible1, setIsModalVisible1] = useState(false);
   const [isModalVisible2, setIsModalVisible2] = useState(false);
   const [numericValue, setNumericValue] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [itemid, setItemid] = useState(0)
 
-  // const ifdel = () => {
-  //   Alert.alert(
-  //     '操作确认',
-  //     '您确定要删除这项吗？',
-  //     [
-  //       {
-  //         text: '取消',
-  //         onPress: () => console.log('Cancel Pressed'),
-  //         style: 'cancel',
-  //       },
-  //       {
-  //         text: '删除',
-  //         onPress: () => onDelete(subItem), // 调用父组件提供的onDelete回调函数
-  //       },
-  //     ],
-  //     { cancelable: false },
-  //   );
-  // };
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());  
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); 
+  const [sumin, setsumin] = useState(0)
+  const [sumout, setsumout] = useState(0)
+  const [reamain, setremain] = useState(0)
+  const [myData, setmyData] = useState([])
+  const [numday, setnumday] = useState(0) 
+  const [isloading, setIsLoading] = useState(true);
+  const navigation = useNavigation();
+  const url = "http://120.55.68.146:8089/getmonthlybill/"
 
   const load = (selectedYear,selectedMonth) =>{
     const token = gettoken();
@@ -78,33 +65,37 @@ const SwipeableBillSubItem = ({ subItem }) => {
     .finally(()=>setIsLoading(false));
   }
 
+
   const edit = (id,note,num) =>{
     const token = gettoken();
     fetch(`http://120.55.68.146:8089/change/${id}`,{
-      method: 'POST',
+      method: 'PUT',
       headers:{
-          //Accept:'application/json',
           "Content-Type":'application/json',
-          //Authorization:`Bearer ${token}`
      },
      body : JSON.stringify({ token: token, note: note, number: num})
     })
-    .catch(error=>console.error(error))
-    .finally(()=>setIsLoading(false));
-  }
-
-  const onDelete = (id) =>{
-    const token = gettoken();
-    fetch(`http://120.55.68.146:8089/bills/${id}`,{
-      method: 'POST',
-      headers:{
-          //Accept:'application/json',
-          "Content-Type":'application/json',
-          //Authorization:`Bearer ${token}`
-     },
+    .then(response=>response.json())
+    .then(json =>{
+      console.log(json)
     })
     .catch(error=>console.error(error))
-    .finally(()=>setIsLoading(false));
+    .finally(()=>load(selectedYear,selectedMonth));
+  }
+
+  const onDelete = () =>{
+    const token = gettoken();
+    fetch('http://120.55.68.146:8089/delete_bills/',{
+      method: 'POST',
+      headers:{
+          "Content-Type":'application/json',
+     },
+     body : JSON.stringify({token, id:itemid})
+    })
+    .then(response=>response.json())
+    .then(json=>{console.log(json)})
+    .catch(error=>console.error(error))
+    .finally(()=>load(selectedYear,selectedMonth));
   }
 
   const handleButtonClick = () => {
@@ -135,160 +126,17 @@ const SwipeableBillSubItem = ({ subItem }) => {
     // load(selectedYear, selectedMonth);
   };
 
-  return (
-    <View style={{ flex: 1, flexDirection: 'row', height: 50 }}>
-      <View style={{flex:1, justifyContent:'center'}}>
-        <Ionicons name={dic[subItem.name]} style={{fontSize:30, marginLeft:15, color:'black'}}/>
-      </View>
-    
-      <View style={{flex:4, justifyContent:'center'}}>
-        <TouchableOpacity onPress={() => {
-          noteClick();
-          setItemid(subItem.id);
-          setInputValue(subItem.note);
-          setNumericValue(subItem.number);
-          }}
-          onLongPress={() => {
-            setItemid(subItem.id);
-            Alert.alert(
-              '操作确认',
-              '您确定要删除这项吗？',
-              [
-                {
-                  text: '取消',
-                  onPress: () => console.log('Cancel Pressed'),
-                  style: 'cancel',
-                },
-                {
-                  text: '删除',
-                  onPress: () => {
-                    onDelete(itemid.toString());
-                    load(selectedYear, selectedMonth);
-                  }
-                },
-              ],
-              { cancelable: false },
-            );
-          }}
-        >
-          <Text style={{fontSize:18, textAlign:'left', color:'black'}}>{subItem.note}</Text>
-        </TouchableOpacity>
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // 页面聚焦时执行的事件或操作
+  //     doSomethingOnFocus();
 
-        {/* Modal */}
-        <Modal
-          visible={isModalVisible1}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={handleModalClose}
-        >
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.textInput}
-              value={inputValue}
-              onChangeText={handleTextInputChange}
-              placeholder="请输入备注"
-            />
-            <View style={styles.buttonRow}>
-              <Button title="确认" onPress={()=>handleConfirm()} />
-              <Button title="取消" onPress={()=>handleModalClose()} />
-            </View>
-          </View>
-        </Modal>
-      </View>
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        <TouchableOpacity onPress={() => {
-          handleButtonClick();
-          setItemid(subItem.id);
-          setInputValue(subItem.note);
-          setNumericValue(subItem.number);
-        }}>
-          <Text style={{ fontSize: 18, textAlign: 'right', marginRight: 20, color: 'black' }}>
-            {subItem.number}
-          </Text>
-        </TouchableOpacity>
-        
-        {/* Modal */}
-        <Modal
-          visible={isModalVisible2}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={handleModalClose}
-        >
-          <View style={styles.modalContent}>
-            <TextInput
-              style={styles.textInput}
-              value={numericValue}
-              onChangeText={handleNumInputChange}
-              keyboardType="numeric"
-              placeholder="请输入金额"
-            />
-            <View style={styles.buttonRow}>
-              <Button title="确认" onPress={handleConfirm} />
-              <Button title="取消" onPress={handleModalClose} />
-            </View>
-          </View>
-        </Modal>
-      </View>
-    </View>
-  );
-};
-
-
-  
-const Screen1 = () => {
-  const years = Array.from({ length: 50 }, (_, i) => i + new Date().getFullYear() - 49); // 假设从1970年开始  
-  const months = ['01月', '02月', '03月', '04月', '05月', '06月', '07月', '08月', '09月', '10月', '11月', '12月'];  
-  
-  const [isloading, setIsLoading] = useState(true);
-  const navigation = useNavigation();
-  const url = "http://120.55.68.146:8089/getmonthlybill/"
-
-  // const myData = [
-  //   {
-  //     "time": "2009-11-01",
-  //     "bill": [
-  //       {
-  //         "name": "reader-outline",
-  //         "note": "aliqua cillum",
-  //         "number": 99,
-  //         "id": 5
-  //       }
-  //     ],
-  //     "in": 85,
-  //     "out": 5
-  //   }
-  // ]
-
-  // const numday = 2
-  // const sumin = 10
-  // const sumout = 7
-  // const remain = 3
-  
-
-  const load = (selectedYear,selectedMonth) =>{
-    const token = gettoken();
-    fetch(url,{
-      method: 'POST',
-      headers:{
-          //Accept:'application/json',
-          "Content-Type":'application/json',
-          //Authorization:`Bearer ${token}`
-      },
-      body : JSON.stringify({ token: token, year: selectedYear, month: selectedMonth+1})
-    })
-    .then(response=>response.json())
-    .then(json=>{
-        console.log(json);
-        setnumday(json.length)
-        setsumin(json.reduce((acc, item) => acc + item.in, 0))
-        setsumout(json.reduce((acc, item) => acc + item.out, 0))
-        setmyData(json)
-    })
-    .catch(error=>console.error(error))
-    .finally(()=>setIsLoading(false));
-  }
-
-
+  //     // 返回一个清理函数，在页面失去焦点时执行（可选）
+  //     return () => {
+  //       doSomethingOnBlur();
+  //     };
+  //   }, [])
+  // );
 
   useEffect(() => {    
     // if(selectedMonth!=null){
@@ -347,7 +195,7 @@ const Screen1 = () => {
           <View style={{flex:1.4}}>
             <Text style={{marginTop:20,fontSize:16, color:'black'}}>收入</Text>
             <Text style={{fontSize:27, color:'black'}}>{sumin}</Text>
-            <Text style={{fontSize:13, color:'black'}}>剩余  {reamain}</Text>
+            <Text style={{fontSize:13, color:'black'}}>剩余  {sumin-sumout}</Text>
           </View>
           <View style={{flex:1.4}}>
             <Text style={{marginTop:20, color:'black'}}>支出</Text>
@@ -425,7 +273,60 @@ const Screen1 = () => {
                   <View>
                     <FlatList
                       data = {item.bill}
-                      renderItem={({item}) =>(<SwipeableBillSubItem subItem={item} />)
+                      renderItem={({item}) =>{
+                        return(
+                        <View style={{ flex: 1, flexDirection: 'row', height: 50 }}>
+                          <View style={{flex:1, justifyContent:'center'}}>
+                            <Ionicons name={dic[item.name]} style={{fontSize:30, marginLeft:15, color:'black'}}/>
+                          </View>
+                        
+                          <View style={{flex:4, justifyContent:'center'}}>
+                            <TouchableOpacity onPress={() => {
+                              noteClick();
+                              setItemid(item.id);
+                              setInputValue(item.note);
+                              setNumericValue(item.number);
+                              }}
+                              onLongPress={() => {
+                                setItemid(item.id);
+                                Alert.alert(
+                                  '操作确认',
+                                  '您确定要删除这项吗？',
+                                  [
+                                    {
+                                      text: '取消',
+                                      onPress: () => console.log('Cancel Pressed'),
+                                      style: 'cancel',
+                                    },
+                                    {
+                                      text: '删除',
+                                      onPress: () => {
+                                        onDelete();
+                                      }
+                                    },
+                                  ],
+                                  { cancelable: false },
+                                );
+                              }}
+                            >
+                              <Text style={{fontSize:18, textAlign:'left', color:'black'}}>{item.note}</Text>
+                            </TouchableOpacity>
+                          </View>
+                          <View style={{ flex: 2, justifyContent: 'center' }}>
+                            <TouchableOpacity onPress={() => {
+                              handleButtonClick();
+                              setItemid(item.id);
+                              setInputValue(item.note);
+                              setNumericValue(item.number);
+                            }}>
+                              <Text style={{ fontSize: 18, textAlign: 'right', marginRight: 20, color: 'black' }}>
+                                {item.number}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                        )
+                      }
                     }
                     />
                   </View>
@@ -434,6 +335,48 @@ const Screen1 = () => {
             }}
           />
         </View>
+        {/* Modal */}
+        <Modal
+          visible={isModalVisible1}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={handleModalClose}
+        >
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.textInput}
+              value={inputValue}
+              onChangeText={handleTextInputChange}
+              placeholder="请输入备注"
+            />
+            <View style={styles.buttonRow}>
+              <Button title="确认" onPress={()=>handleConfirm()} />
+              <Button title="取消" onPress={()=>handleModalClose()} />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Modal */}
+        <Modal
+          visible={isModalVisible2}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={handleModalClose}
+        >
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.textInput}
+              value={numericValue}
+              onChangeText={handleNumInputChange}
+              keyboardType="numeric"
+              placeholder="请输入金额"
+            />
+            <View style={styles.buttonRow}>
+              <Button title="确认" onPress={()=>handleConfirm()} />
+              <Button title="取消" onPress={()=>handleModalClose()} />
+            </View>
+          </View>
+        </Modal>
       </LinearGradient>
     </SafeAreaView>  
   );  
@@ -465,165 +408,3 @@ const styles = StyleSheet.create({
 });  
   
 export default Screen1;
-
-
-    // const load = (selectedYear,selectedMonth) =>{
-    //   fetch(url,{
-    //     method: 'POST',
-    //     headers:{
-    //         //Accept:'application/json',
-    //         "Content-Type":'application/json',
-    //         //Authorization:`Bearer ${token}`
-    //    },
-    //    body : JSON.stringify({ token: token, year: selectedYear, month: selectedMonth})
-    //   })
-    //   .then(response=>response.json())
-    //   .then(json=>{
-    //       console.log(json);
-    //       setnumday(json.length)
-    //       setsumin(json.reduce((acc, item) => acc + item.in, 0))
-    //       setsumout(json.reduce((acc, item) => acc + item.out, 0))
-    //       setmyData(json)
-    //   })
-    //   .catch(error=>console.error(error))
-    //   .finally(()=>setIsLoading(false));
-    // }
-
-    const edit = (id,note,num) =>{
-      fetch(url,{
-        method: 'POST',
-        headers:{
-            //Accept:'application/json',
-            "Content-Type":'application/json',
-            //Authorization:`Bearer ${token}`
-       },
-       body : JSON.stringify({ token: token, note: note, number: num})
-      })
-      .catch(error=>console.error(error))
-      .finally(()=>setIsLoading(false));
-    }
-
-    const onDelete = (id) =>{
-      fetch(url,{
-        method: 'POST',
-        headers:{
-            //Accept:'application/json',
-            "Content-Type":'application/json',
-            //Authorization:`Bearer ${token}`
-       },
-       body : JSON.stringify({ token: token, id: id})
-      })
-      .catch(error=>console.error(error))
-      .finally(()=>setIsLoading(false));
-    }
-
-
-    // // 使用 useEffect 来处理副作用
-    // useEffect(() => {
-    //   load(selectedYear, selectedMonth);
-    // }, [selectedYear, selectedMonth]); // 当 selectedUrl 或 income 改变时触发
-    // // useEffect(() => load(url1,income), []);
-
-
-
-
-
-
-
-
-// const myData = [
-//   {
-//     "time": "2014-07-22",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "consectetur",
-//         "number": 64,
-//         "id": 52
-//       },
-//       {
-//         "name": "reader-outline",
-//         "note": "Ut ut",
-//         "number": 1,
-//         "id": 36
-//       }
-//     ],
-//     "in": 22222.22,
-//     "out": 11111.11
-//   },
-//   {
-//     "time": "2009-11-01",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "aliqua cillum",
-//         "number": 99,
-//         "id": 5
-//       }
-//     ],
-//     "in": 85,
-//     "out": 5
-//   },{
-//     "time": "2014-07-22",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "consectetur",
-//         "number": 64,
-//         "id": 52
-//       },
-//       {
-//         "name": "reader-outline",
-//         "note": "Ut ut",
-//         "number": 1,
-//         "id": 36
-//       }
-//     ],
-//     "in": 22222.22,
-//     "out": 11111.11
-//   },
-//   {
-//     "time": "2009-11-01",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "aliqua cillum",
-//         "number": 99,
-//         "id": 5
-//       }
-//     ],
-//     "in": 85,
-//     "out": 5
-//   },{
-//     "time": "2014-07-22",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "consectetur",
-//         "number": 64,
-//         "id": 52
-//       },
-//       {
-//         "name": "reader-outline",
-//         "note": "Ut ut",
-//         "number": 1,
-//         "id": 36
-//       }
-//     ],
-//     "in": 22222.22,
-//     "out": 11111.11
-//   },
-//   {
-//     "time": "2009-11-01",
-//     "bill": [
-//       {
-//         "name": "reader-outline",
-//         "note": "aliqua cillum",
-//         "number": 99,
-//         "id": 5
-//       }
-//     ],
-//     "in": 85,
-//     "out": 5
-//   }
-// ]

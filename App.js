@@ -1,58 +1,9 @@
-// import { Text, StyleSheet, View, TextInput, SafeAreaView, Button } from 'react-native'
-// import React, { Component } from 'react'
-// //import WebView from 'react-native-webview'
-// //import Ionicons from 'react-native-vector-icons/Ionicons'
-// import AuthScreen from './login'
-// import LineChartComponent from './chart'
-// import MyTabs from './navigation'
-// import {createNativeStackNavigator} from '@react-navigation/native-stack';
-// import { NavigationContainer } from '@react-navigation/native'
-// import Screen1 from './Screen/detail';  
-// import Screen2 from './Screen/icon';
-// import Screen3 from './Screen/add';  
-// import Screen4 from './Screen/find';  
-// import Screen5 from './Screen/my';  
-
-// const stack = createNativeStackNavigator();
-
-// function MyApp() {
-//   // Assign this to a dev-only button or useEffect call
-//   const connectToRemoteDebugger = () => {
-//     NativeDevSettings.setIsDebuggingRemotely(true);
-//   };
-// }
-
-// export default class App extends Component {
-//   render() {
-//     return (
-//       <NavigationContainer>
-//         <stack.Navigator initialRouteName='my' screenOptions={{headerShown:false}}>
-//           <stack.Screen name='add' component={Screen3}/>
-//           <stack.Screen name='detail' component={Screen1}/>
-//           <stack.Screen name='icon' component={Screen2}/>
-//           <stack.Screen name='find' component={Screen4}/>
-//           <stack.Screen name='my' component={Screen5}/>
-//         </stack.Navigator>
-//       </NavigationContainer>
-//     )
-//   }
-// }
-
-// const styles = StyleSheet.create({})
-
-
-
-
-
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
-import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';  
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';  
-//import { FontAwesome,MaterialIcons } from '@expo/vector-icons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Icon } from '@ui-kitten/components';
 import CustomTabBar from './CustomTabBar'; // 导入自定义TabBar组件 
 import Screen1 from './Screen/detail';  
 import Screen2 from './Screen/icon';
@@ -107,15 +58,10 @@ function Stack1(){
   const [initialRoute, setInitialRoute] = useState('login');
 
   useEffect(() => {
-    async function checkToken() {
       const token = gettoken();
       if (token != null) {
         setInitialRoute('main');
-      }
-      
     }
-
-    checkToken();
   }, []); // 注意这里的空依赖数组，确保只在组件挂载时执行一次
 
   return(
